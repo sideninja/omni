@@ -151,8 +151,8 @@ dockers:
     goos: linux
     goarch: amd64 arm64
     use: buildx
-    build_args:
-      HALO_VERSION_1_ULUWATU: "{{ .Tag }}"
+    build_flag_templates:
+      - --build-arg HALO_VERSION_1_ULUWATU={{ .Tag }}
 
 archives:
   - format: tar.gz
