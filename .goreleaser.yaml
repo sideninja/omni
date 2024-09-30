@@ -72,19 +72,6 @@ builds:
     ldflags:
       - -s -w
 
-  - id: halovisor
-    main: ./halo
-    binary: halo
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-    goarch:
-      - amd64
-      - arm64
-    ldflags:
-      - -s -w -X github.com/omni-network/omni/lib/buildinfo.version={{ if .IsSnapshot }}main{{ else }}{{ .Tag }}{{ end }}
-
 dockers:
   - ids:
       - halo
@@ -140,19 +127,6 @@ dockers:
     goos: linux
     goarch: amd64 arm64
     use: buildx
-
-  - ids:
-      - halovisor
-    dockerfile: ./scripts/halovisor/Dockerfile
-    image_templates:
-      - omniops/halovisor:{{ .ShortCommit }}
-      - omniops/halovisor:{{ if .IsSnapshot }}main{{ else }}latest{{ end }}
-      - omniops/halovisor:{{ if .IsSnapshot }}main{{ else }}{{ .Tag }}{{ end }}
-    goos: linux
-    goarch: amd64 arm64
-    use: buildx
-    build_flag_templates:
-      - --build-arg HALO_VERSION_1_ULUWATU={{ .Tag }}
 
 archives:
   - format: tar.gz
