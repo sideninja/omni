@@ -73,8 +73,8 @@ builds:
       - -s -w
 
   - id: halovisor
-    main: ./halovisor
-    binary: halovisor
+    main: ./halo
+    binary: halo
     env:
       - CGO_ENABLED=0
     goos:
