@@ -33,16 +33,3 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push halovisor
-        uses: docker/build-push-action@v6
-        with:
-          file: scripts/halovisor/Dockerfile
-          build-args: |
-            HALO_VERSION_1_ULUWATU=${{ github.ref_name }}
-          platforms: |
-            linux/amd64
-          push: true
-          tags: |
-            omniops/halovisor:latest
-            omniops/halovisor:${{ github.ref_name }}
