@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/omni-network/omni/lib/cchain"
 	"github.com/omni-network/omni/lib/errors"
 	"github.com/omni-network/omni/lib/expbackoff"
-	"github.com/omni-network/omni/lib/log"
 	"github.com/omni-network/omni/lib/netconf"
 	"github.com/omni-network/omni/lib/tracer"
 	"github.com/omni-network/omni/lib/umath"
@@ -349,8 +347,6 @@ func newABCIFetchFunc(attCl atypes.QueryClient, cmtCl cmtservice.ServiceClient, 
 		const endpoint = "fetch_attestations"
 		defer latency(endpoint)()
 
-		log.Debug(ctx, "FFF", "fetch_attestation", "ver", chainVer.ID, "from", fromOffset, "cached", cachedHeight)
-
 		ctx, span := tracer.Start(ctx, spanName(endpoint))
 		defer span.End()
 
@@ -364,8 +360,6 @@ func newABCIFetchFunc(attCl atypes.QueryClient, cmtCl cmtservice.ServiceClient, 
 		} else if ok {
 			binarySearchStepsMetric(chainName, 0)
 			lookbackStepsMetric(chainName, 0)
-
-			log.Debug(ctx, "FFF", "fetch_attestation", "found", "latest", attsString(atts))
 
 			return atts, 0, nil
 		}
@@ -399,13 +393,11 @@ func newABCIFetchFunc(attCl atypes.QueryClient, cmtCl cmtservice.ServiceClient, 
 
 				return nil, 0, errors.Wrap(err, "lookback search")
 			}
-			log.Debug(ctx, "FFF", "fetch_attestation", "lookback", "start", startHeight, "end", endHeight)
 		} else {
 			// otherwise use cached height from previous search as the next start height
 			// but increased by one since we are searching the next attestation offset
 			startHeight = cachedHeight + 1
 			endHeight = latestHeight
-			log.Debug(ctx, "FFF", "fetch_attestation", "cached", "start", startHeight, "end", endHeight)
 		}
 
 		offsetHeight, err := binarySearch(ctx, attCl, chainVer, chainName, fromOffset, startHeight, endHeight)
@@ -423,8 +415,6 @@ func newABCIFetchFunc(attCl atypes.QueryClient, cmtCl cmtservice.ServiceClient, 
 		} else if !ok {
 			return nil, 0, errors.New("expected to find attestations [BUG]")
 		}
-
-		log.Debug(ctx, "FFF", "fetch_attestation", "found", "binary", attsString(atts))
 
 		return atts, offsetHeight, nil
 	}
@@ -811,13 +801,4 @@ func lookbackRange(
 		endHeight = queryHeight
 		lookback *= 2
 	}
-}
-
-func attsString(atts []xchain.Attestation) string {
-	offsets := ""
-	for _, a := range atts {
-		offsets = fmt.Sprintf("%s %d", offsets, a.AttestOffset)
-	}
-
-	return offsets
 }
