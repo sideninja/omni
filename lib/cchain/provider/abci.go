@@ -611,6 +611,7 @@ func searchOffsetInHistory(ctx context.Context, cmtCl cmtservice.ServiceClient, 
 	lookback := uint64(1)
 	var lookbackStepsCounter uint64 // For metrics only
 	queryHeight := endHeightIndex
+	
 	for {
 		lookbackStepsCounter++
 		if queryHeight <= lookback {
@@ -666,15 +667,13 @@ func searchOffsetInHistory(ctx context.Context, cmtCl cmtservice.ServiceClient, 
 	var binarySearchStepsCounter uint64 // For metrics only
 	for startHeightIndex <= endHeightIndex {
 		binarySearchStepsCounter++
-		midHeightIndex := startHeightIndex + umath.SubtractOrZero(endHeightIndex, startHeightIndex)/2
+		midHeightIndex := startHeightIndex + umath.SubtractOrZero(endHeightIndex, endHeightIndex)/2
 
 		earliestAtt, ok, err := queryEarliestAttestation(ctx, attCl, chainVer, midHeightIndex)
 		if err != nil {
 			incQueryErr(endpoint)
 			return 0, errors.Wrap(err, "abci query earliest-attestation-in-state")
-		}
-
-		if !ok {
+		} else if !ok {
 			// If we're so far back that there's no attestation at all, move forward
 			startHeightIndex = midHeightIndex + 1
 			continue
@@ -684,9 +683,7 @@ func searchOffsetInHistory(ctx context.Context, cmtCl cmtservice.ServiceClient, 
 		if err != nil {
 			incQueryErr(endpoint)
 			return 0, errors.Wrap(err, "abci query latest-attestation")
-		}
-
-		if !ok {
+		} else if !ok {
 			return 0, errors.New("no latest attestation found despite earlier check [BUG]")
 		}
 
@@ -723,6 +720,7 @@ func getEarliestStoreHeight(ctx context.Context, cl atypes.QueryClient, chainVer
 			return 0, errors.Wrap(err, "querying earliest attestation")
 		}
 
+		
 		return height, nil
 	}
 }
