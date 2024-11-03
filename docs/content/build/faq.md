@@ -6,9 +6,11 @@ sidebar_position: 4
 
 ### Which chains does Omni support?
 
-Mainnet v1 launch: Ethereum, Omni, Arbitrum, Optimism, Base
+**Mainnet**: Ethereum, Omni, Arbitrum One, Optimism, Base
 
-Omega Testnet: Ethereum Holesky, Omni Omega, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia
+**Omega testnet**: Ethereum Holesky, Omni Omega, Arbitrum Sepolia, Optimism Sepolia, Base Sepolia
+
+More chains will be added overtime.
 
 ### How fast is a message delivered?
 
@@ -86,4 +88,4 @@ However, Omni is not a bridge for canonical or native tokens. If you believe you
 
 ### Does the Omni EVM support pre-EIP-155 transactions?
 
-Our public RPCs do not support pre-EIP-155 transactions. If you'd like to submit a pre-155 transaction, you can run a full node (see [relevant page](../operate/1-run-full-node.md)), enable [AllowUnprotectedTxs](https://github.com/ethereum/go-ethereum/blob/e67d5f8c441d5c85cfa69317db8d85794645af14/node/config.go#L199), and submit the transaction to your own endpoint.
+Our public RPCs do not support pre-EIP-155 transactions. If you'd like to submit a pre-155 transaction, you can run a full node (see [relevant page](../operate/run-full-node.md)), enable [AllowUnprotectedTxs](https://github.com/ethereum/go-ethereum/blob/e67d5f8c441d5c85cfa69317db8d85794645af14/node/config.go#L199), and submit the transaction to your own endpoint.

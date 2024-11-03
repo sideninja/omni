@@ -2,21 +2,23 @@
 
 This document provides a detailed step-by-step process describing how to manually setup and configure an Omni node.
 It reproduces what the `omni operators init-nodes` command does automatically.
-See [Run a Full Node](1-run-full-node.md) docs for the automated process.
+See [Run a Full Node](run-full-node.md) docs for the automated process.
 
 The resulting `~/.omni/<network>` folder has the following structure:
 ```
 ~/.omni/<network>/     # Node home folder
  ├─ halo/              # Consensus client
  ├─ geth/              # Execution client
- ├─ compose.yml        # Docker compose
+ ├─ compose.yaml        # Docker compose
 ```
 
 It is a valid configuration for running a production Omni full node.
 
-The only supported `<network>` at the moment is: `omega`
+The supported `<network>` are:
+- `omega` testnet, chain id [164](https://chainlist.org/chain/164)
+- `mainnet` (experimental), chain id [166](https://chainlist.org/chain/166)
 
-Note that validator nodes require additional config as specified in the [Run a Validator](2-validator.md).
+Note that validator nodes require additional config as specified in the [Run a Validator](validator.md).
 
 ## Configure halo
 
@@ -172,10 +174,10 @@ A path to this file (or copy of) must be provided in the `halo.toml` `engine-jwt
 `geth` will automatically generate this file during `geth init` on startup if it doesn't exist.
 
 ## Configure Docker Compose
-The preferred way to run an Omni node is via Docker Compose as described in the [Run a Full Node](1-run-full-node.md#halo-deployment-options) docs.
-The docker `compose.yml` file is located in `~/.omni/<network>/compose.yml`.
+The preferred way to run an Omni node is via Docker Compose as described in the [Run a Full Node](run-full-node.md#halo-deployment-options) docs.
+The docker `compose.yaml` file is located in `~/.omni/<network>/compose.yaml`.
 
-Download the latest template `compose.yml` [here](https://github.com/omni-network/omni/blob/main/cli/cmd/compose.yml.tpl).
+Download the latest template `compose.yaml` [here](https://github.com/omni-network/omni/blob/main/cli/cmd/compose.yaml.tpl).
 
 Ensure the following template fields are replaced:
 - `{{.HaloTag}}`: The latest `omniops/halovisor` docker image tag, e.g. `v0.99.0`, see [releases](https://github.com/omni-network/omni/releases)

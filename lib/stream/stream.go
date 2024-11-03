@@ -15,6 +15,15 @@ import (
 
 type Callback[E any] func(ctx context.Context, elem E) error
 
+// Cache abstracts a simple element cache.
+type Cache[E any] interface {
+	// Get returns strictly sequential elements from the provided height (inclusive) or nil.
+	Get(from uint64) []E
+	// Set sets elements from the provided height (inclusive).
+	// The elements must be strictly sequential.
+	Set(from uint64, elems []E)
+}
+
 type Deps[E any] struct {
 	// Dependency functions
 
@@ -27,6 +36,8 @@ type Deps[E any] struct {
 	Verify func(ctx context.Context, elem E, height uint64) error
 	// Height returns the height of an element.
 	Height func(elem E) uint64
+	// Cache of elements.
+	Cache Cache[E]
 
 	// Config
 	FetchWorkers  uint64
@@ -38,6 +49,8 @@ type Deps[E any] struct {
 	IncFetchErr        func()
 	IncCallbackErr     func()
 	SetStreamHeight    func(uint64)
+	IncCacheHit        func()
+	IncCacheMiss       func()
 	SetCallbackLatency func(time.Duration)
 	StartTrace         func(ctx context.Context, height uint64, spanName string) (context.Context, trace.Span)
 }
@@ -65,6 +78,11 @@ func Stream[E any](ctx context.Context, deps Deps[E], srcChainID uint64, startHe
 				return nil
 			}
 
+			if elems := deps.Cache.Get(height); len(elems) > 0 {
+				deps.IncCacheHit()
+				return elems
+			}
+
 			fetchCtx, span := deps.StartTrace(ctx, height, "fetch")
 			elems, err := deps.FetchBatch(fetchCtx, srcChainID, height)
 			span.End()
@@ -84,21 +102,8 @@ func Stream[E any](ctx context.Context, deps Deps[E], srcChainID uint64, startHe
 				continue
 			}
 
-			heightsOK := true
-			for i, elem := range elems {
-				if h := deps.Height(elem); h != height+uint64(i) {
-					log.Error(ctx, "Invalid "+deps.ElemLabel+" "+deps.HeightLabel+" [BUG]", nil,
-						"expect", height,
-						"actual", h,
-					)
-
-					heightsOK = false
-				}
-			}
-			if !heightsOK { // Can't return invalid elements, just retry fetching for now.
-				backoff()
-				continue
-			}
+			deps.IncCacheMiss() // Only count non-empty fetches as cache misses.
+			deps.Cache.Set(height, elems)
 
 			return elems
 		}

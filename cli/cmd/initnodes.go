@@ -18,7 +18,6 @@ import (
 	"github.com/omni-network/omni/lib/errors"
 	"github.com/omni-network/omni/lib/log"
 	"github.com/omni-network/omni/lib/netconf"
-	"github.com/omni-network/omni/lib/xchain"
 
 	cmtconfig "github.com/cometbft/cometbft/config"
 	k1 "github.com/cometbft/cometbft/crypto/secp256k1"
@@ -51,7 +50,7 @@ func (c InitConfig) Verify() error {
 	return c.Network.Verify()
 }
 
-//go:embed compose.yml.tpl
+//go:embed compose.yaml.tpl
 var composeTpl []byte
 
 func newInitCmd() *cobra.Command {
@@ -86,6 +85,14 @@ func InitNodes(ctx context.Context, cfg InitConfig) error {
 		return errors.New("required flag --network not set")
 	} else if cfg.Moniker == "" {
 		return errors.New("required flag --moniker not set")
+	}
+
+	if !filepath.IsAbs(cfg.Home) {
+		absPath, err := filepath.Abs(cfg.Home)
+		if err != nil {
+			return errors.Wrap(err, "convert path")
+		}
+		cfg.Home = absPath
 	}
 
 	if cfg.Home == "" {
@@ -170,8 +177,7 @@ func maybeDownloadGenesis(ctx context.Context, network netconf.ID) error {
 	if err != nil {
 		return errors.Wrap(err, "create rpc client")
 	}
-	stubNamer := func(xchain.ChainVersion) string { return "" }
-	cprov := cprovider.NewABCI(rpcCl, network, stubNamer)
+	cprov := cprovider.NewABCI(rpcCl, network)
 
 	execution, consensus, err := cprov.GenesisFiles(ctx)
 	if err != nil {
@@ -186,7 +192,7 @@ func maybeDownloadGenesis(ctx context.Context, network netconf.ID) error {
 }
 
 func writeComposeFile(ctx context.Context, cfg InitConfig) error {
-	composeFile := filepath.Join(cfg.Home, "compose.yml")
+	composeFile := filepath.Join(cfg.Home, "compose.yaml")
 
 	if cmtos.FileExists(composeFile) {
 		log.Info(ctx, "Found existing compose file", "path", composeFile)
@@ -231,7 +237,7 @@ func writeComposeFile(ctx context.Context, cfg InitConfig) error {
 		return errors.Wrap(err, "writing compose file")
 	}
 
-	log.Info(ctx, "Generated docker compose file", "path", filepath.Join(cfg.Home, "compose.yml"), "geth_version", geth.Version, "halo_version", cfg.HaloTag)
+	log.Info(ctx, "Generated docker compose file", "path", filepath.Join(cfg.Home, "compose.yaml"), "geth_version", geth.Version, "halo_version", cfg.HaloTag)
 
 	return nil
 }
