@@ -58,6 +58,7 @@ func Dial(network netconf.ID) (Provider, error) {
 
 // NewABCI returns a new provider using the provided cometBFT ABCI client.
 func NewABCI(cmtCl rpcclient.Client, network netconf.ID, opts ...func(*Provider)) Provider {
+	
 	return newProvider(rpcAdaptor{abci: cmtCl}, network, opts...)
 }
 
